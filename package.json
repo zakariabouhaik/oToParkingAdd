@@ -56,11 +56,13 @@
       "not dead",
       "not op_mini all"
     ],
+   
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
     ]
+    "proxy": "http://16.171.20.170:8085"
   },
   "devDependencies": {
     "sass": "^1.79.5"
