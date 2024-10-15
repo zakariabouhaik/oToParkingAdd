@@ -12,6 +12,7 @@ const useCurrentUserId = () => {
             }
         };
 
+        
         getUserIdFromToken();
     }, []);
 
