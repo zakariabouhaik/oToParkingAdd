@@ -21,7 +21,7 @@ export default function Logincho() {
   const handleUsernameSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch(`http://16.171.20.170:8085/User/hasPassword?username=${username}`, {
+      const response = await fetch(`https://16.171.20.170:8085/User/hasPassword?username=${username}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
