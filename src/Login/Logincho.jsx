@@ -56,7 +56,7 @@ export default function Logincho() {
   const handlePasswordSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch("http://16.171.20.170:8085/User/login", {
+      const response = await fetch("https://16.171.20.170:8085/User/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -85,7 +85,7 @@ export default function Logincho() {
       localStorage.setItem("token", data.accessToken);
       localStorage.setItem("id", userId);
   
-      const userResponse = await fetch(`http://16.171.20.170:8085/User/getUserRole/${userId}`, {
+      const userResponse = await fetch(`https://16.171.20.170:8085/User/getUserRole/${userId}`, {
         headers: { "Authorization": `Bearer ${data.accessToken}` }
       });
   
@@ -118,7 +118,7 @@ export default function Logincho() {
   const handleOtpSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch(`http://16.171.20.170:8085/User/verifyGardienCode?username=${username}&gardienCode=${otp}`, {
+      const response = await fetch(`https://16.171.20.170:8085/User/verifyGardienCode?username=${username}&gardienCode=${otp}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -147,7 +147,7 @@ export default function Logincho() {
       return;
     }
     try {
-      const response = await fetch(`http://16.171.20.170:8085/User/createPassword?username=${username}&password=${password}`, {
+      const response = await fetch(`https://16.171.20.170:8085/User/createPassword?username=${username}&password=${password}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
