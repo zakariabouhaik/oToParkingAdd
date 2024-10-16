@@ -25,6 +25,8 @@ import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import SouthAmericaIcon from '@mui/icons-material/SouthAmerica';
 import { ThreeDot } from 'react-loading-indicators';
 
+ 
+
 
 const InputField = ({ icon, label, error, onInputChange, ...props }) => (
   <TextField
@@ -74,6 +76,16 @@ const SelectField = ({ label, options, startAdornment, error, onSelectChange, ..
     {error && <Typography color="error" variant="caption">{error}</Typography>}
   </FormControl>
 );
+
+
+const axiosInstance = axios.create();
+
+// Disable SSL certificate verification (only for development!)
+axiosInstance.defaults.httpsAgent = {
+  rejectUnauthorized: false
+};
+
+
 
 const Agent = () => {
   const [regions, setRegions] = useState([]);
@@ -231,15 +243,13 @@ const Agent = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`http://16.171.20.170:8085/User/createAgent?username=${telephone}`, {
-        method: 'POST',
-      });
+      const response1 = await axiosInstance.post(`https://16.171.20.170:8085/User/createAgent?username=${telephone}`);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response1.data || !response1.data.id) {
+        throw new Error('Invalid response from first API');
       }
 
-      const data1 = await response.json();
+      const keycloakId = response1.data.id;
 
       const response2 = await fetch(`https://er8wa98ace.execute-api.us-east-1.amazonaws.com/dev/createAgent`, {
         method: 'POST',
@@ -252,7 +262,7 @@ const Agent = () => {
           region: selectedRegion,
           province: selectedProvince,
           pachalik: selectedPachalik,
-          keycloakId: data1.id
+          keycloakId: keycloakId
         })
       });
 
