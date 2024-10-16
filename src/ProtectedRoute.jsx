@@ -6,7 +6,7 @@ const ProtectedRoute = ({ children, requiredRoles }) => {
     const { userDetails, loading } = useUserDetails();
     const location = useLocation();
 
-    // Check if the user is authenticated (you might need to adjust this based on how you store the authentication state)
+    // Check if the user is authenticated
     const isAuthenticated = !!localStorage.getItem('token');
 
     if (!isAuthenticated) {
@@ -14,9 +14,28 @@ const ProtectedRoute = ({ children, requiredRoles }) => {
         return <Navigate to="/" state={{ from: location }} replace />;
     }
 
-    if (!userDetails || !requiredRoles.includes(userDetails.role)) {
-        // User doesn't have the required role, redirect to login page
+    if (loading) {
+        // User is authenticated, but details are still loading
+        return <div>Loading...</div>;
+    }
+
+    if (!userDetails) {
+        // User details couldn't be fetched, redirect to login
         return <Navigate to="/" state={{ from: location }} replace />;
+    }
+
+    if (!requiredRoles.includes(userDetails.role)) {
+        // User doesn't have the required role, redirect to appropriate page based on their role
+        switch (userDetails.role) {
+            case 'AGENT':
+                return <Navigate to="/Gardien" replace />;
+            case 'SUPERVISEUR':
+                return <Navigate to="/agent" replace />;
+            case 'AUDITE':
+                return <Navigate to={`/form/${userDetails.id}`} replace />;
+            default:
+                return <Navigate to="/" replace />;
+        }
     }
 
     // User is authenticated and has the required role, render the protected content
