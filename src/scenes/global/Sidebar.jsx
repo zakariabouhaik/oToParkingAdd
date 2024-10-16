@@ -122,13 +122,17 @@ const Sidebar = () => {
             </Box>
           )}
 
+
           {!isCollapsed && (
             <Box mb="25px">
-
               <Box textAlign="center">
-     
                 <Typography marginTop={1} variant="h5" color='white'>
-                  {userDetails ? userDetails.role : "Loading..."}
+                  {userDetails ? (
+                    <>
+                      {userDetails.role}<br /><br />
+                      {userDetails.nom} {userDetails.prenom}
+                    </>
+                  ) : "Loading..."}
                 </Typography>
               </Box>
             </Box>
