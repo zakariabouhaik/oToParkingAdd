@@ -1,4 +1,4 @@
-import { useState } from "react";
+ import { useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Topbar from "./scenes/global/Topbar";
 import Sidebar from "./scenes/global/Sidebar";
@@ -11,11 +11,9 @@ import Parkingo from "./scenes/team/Parking copy";
 import Parkings from "./scenes/team/Parking copy 2";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
-
 function App() {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
-
   const AuthenticatedLayout = ({ children }) => (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <div style={{
@@ -55,7 +53,6 @@ function App() {
       </main>
     </div>
   );
-
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
@@ -63,53 +60,26 @@ function App() {
         <Routes>
           <Route path="/" element={<Logincho />} />
           <Route path="/login" element={<Logincho />} />
-          <Route path="/Gardien" element={
-            <ProtectedRoute requiredRoles={['AGENT']}>
-              <AuthenticatedLayout>
-                <Gardien />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/agent" element={
-            <ProtectedRoute requiredRoles={['SUPERVISEUR']}>
-              <AuthenticatedLayout>
-                <Agent />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/parkings" element={
-            <ProtectedRoute requiredRoles={['AGENT']}>
-              <AuthenticatedLayout>
-                <Parkings />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/Parkingo" element={
-            <ProtectedRoute requiredRoles={['AGENT']}>
-              <AuthenticatedLayout>
-                <Parkingo />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/Parking" element={
-            <ProtectedRoute requiredRoles={['SUPERVISEUR']}>
-              <AuthenticatedLayout>
-                <Parking />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/form/:userId" element={
-            <ProtectedRoute requiredRoles={['AUDITE']}>
-              <AuthenticatedLayout>
-                <Form />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute requiredRoles={['AGENT', 'SUPERVISEUR']}>
+                <AuthenticatedLayout>
+                  <Routes>
+                    <Route path="/parkings" element={<ProtectedRoute requiredRoles={['AGENT']}><Parkings /></ProtectedRoute>} />
+                    <Route path="/Parkingo" element={<ProtectedRoute requiredRoles={['AGENT']}><Parkingo /></ProtectedRoute>} />
+                    <Route path="/Agent" element={<ProtectedRoute requiredRoles={['SUPERVISEUR']}><Agent /></ProtectedRoute>} />
+                    <Route path="/Gardien" element={<ProtectedRoute requiredRoles={['AGENT']}><Gardien /></ProtectedRoute>} />
+                    <Route path="/Parking" element={<ProtectedRoute requiredRoles={['SUPERVISEUR']}><Parking /></ProtectedRoute>} />
+                    <Route path="" element={<Navigate to="/parkings" replace />} />
+                  </Routes>
+                </AuthenticatedLayout>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </ThemeProvider>
     </ColorModeContext.Provider>
   );
 }
-
-export default App;
+export default App;  
