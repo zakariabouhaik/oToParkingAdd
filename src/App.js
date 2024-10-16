@@ -16,6 +16,7 @@ import FAQ from "./scenes/faq";
 import Parking from "./scenes/team/Parking";
 import Logincho from "./Login/Logincho";
 import Login from "./Login/Login";
+import ProtectedRoute from "./ProtectedRoute";
 import Parkingo from "./scenes/team/Parking copy";
 import Geography from "./scenes/geography";
 import Parkings from "./scenes/team/Parking copy 2";
@@ -76,21 +77,13 @@ function App() {
                 overflowY: 'auto',
               }}>
                 <Routes>
-                  <Route path="/team" element={<Team />} />
-                  <Route path="/contacts" element={<Contacts />} />
-                  <Route path="/invoices" element={<Invoices />} />
-                  <Route path="/form" element={<Form />} />
-                  <Route path="/parkings" element={<Parkings />} />
-                  <Route path="/Parkingo" element={<Parkingo />} />
-                  <Route path="/bar" element={<Bar />} />
-                  <Route path="/pie" element={<Pie />} />
-                  <Route path="/line" element={<Line />} />
-                  <Route path="/Agent" element={<Agent />} />
-                  <Route path="/Gardien" element={<Gardien />} />
-                  <Route path="/Parking" element={<Parking />} />              
-                  <Route path="/faq" element={<FAQ />} />
-                  <Route path="/calendar" element={<Calendar />} />
-                  <Route path="/geography" element={<Geography />} />
+              
+                    <Route path="/parkings" element={<ProtectedRoute requiredRoles={['AGENT']}><Parkings /></ProtectedRoute>} />
+                  <Route path="/Parkingo" element={<ProtectedRoute requiredRoles={['AGENT']}><Parkingo /></ProtectedRoute>} />
+                  <Route path="/Agent" element={<ProtectedRoute requiredRoles={['SUPERVISEUR']}><Agent /></ProtectedRoute>} />
+                  <Route path="/Gardien" element={<ProtectedRoute requiredRoles={['AGENT']}><Gardien /></ProtectedRoute>} />
+                  <Route path="/Parking" element={<ProtectedRoute requiredRoles={['SUPERVISEUR']}><Parking /></ProtectedRoute>} />      
+               
                 </Routes>
               </div>
             </main>
