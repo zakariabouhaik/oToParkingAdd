@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Topbar from "./scenes/global/Topbar";
 import Sidebar from "./scenes/global/Sidebar";
 import Agent from "./scenes/team/Agent";
@@ -15,7 +15,6 @@ import { ColorModeContext, useMode } from "./theme";
 function App() {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
-  const location = useLocation();
 
   const AuthenticatedLayout = ({ children }) => (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
