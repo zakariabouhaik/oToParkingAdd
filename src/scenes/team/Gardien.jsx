@@ -70,6 +70,14 @@ const SelectField = ({ label, name, value, options, onChange, startAdornment, er
   </FormControl>
 );
 
+const axiosInstance = axios.create();
+
+// Disable SSL certificate verification (only for development!)
+axiosInstance.defaults.httpsAgent = {
+  rejectUnauthorized: false
+};
+
+
 const Gardien = () => {
   const [formData, setFormData] = useState({
     nom: '',
@@ -137,20 +145,13 @@ const Gardien = () => {
         picture: ''
       };
 
-      const response = await fetch(`http://16.171.20.170:8085/User/createGardien`, {
-        method: 'POST',
+      const response = await axiosInstance.post('https://16.171.20.170:8085/User/createGardien', gardienData, {
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(gardienData)
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Gardien créé avec succès:', data);
+      console.log('Gardien créé avec succès:', response.data);
       setSnackbar({ open: true, message: 'Gardien créé avec succès', severity: 'success' });
       setFormData({
         nom: '',
@@ -163,7 +164,16 @@ const Gardien = () => {
       setErrors({});
     } catch (error) {
       console.error('Erreur lors de la création du gardien:', error);
-      setSnackbar({ open: true, message: 'Erreur lors de la création du gardien', severity: 'error' });
+      let errorMessage = 'Erreur lors de la création du gardien';
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        errorMessage = `Erreur ${error.response.status}: ${error.response.data.message || error.response.statusText}`;
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorMessage = 'Aucune réponse reçue du serveur';
+      }
+      setSnackbar({ open: true, message: errorMessage, severity: 'error' });
     } finally {
       setIsLoading(false);
     }
