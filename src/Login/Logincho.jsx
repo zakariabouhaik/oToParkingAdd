@@ -1,11 +1,19 @@
 import React, { useState } from "react";
 import { 
-  Button, CssBaseline, TextField, Paper, Box, Grid, 
+  Button, CssBaseline, TextField, Box, Grid, 
   Typography, createTheme, ThemeProvider, Alert, Snackbar 
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 const defaultTheme = createTheme();
+
+const axiosInstance = axios.create();
+
+// Disable SSL certificate verification (only for development!)
+axiosInstance.defaults.httpsAgent = {
+  rejectUnauthorized: false
+};
 
 export default function Logincho() {
   const navigate = useNavigate();
@@ -21,16 +29,9 @@ export default function Logincho() {
   const handleUsernameSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch(`https://16.171.20.170:8085/User/hasPassword?username=${username}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await axiosInstance.post(`https://16.171.20.170:8085/User/hasPassword?username=${username}`);
       
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      
-      const result = await response.text();
+      const result = response.data;
       console.log('Response:', result);
       
       switch(result.trim()) {
@@ -41,7 +42,7 @@ export default function Logincho() {
           setStep("password");
           break;
         case "ma3ndoch":
-          setStep("newPassword");
+          setStep("otp");
           break;
         default:
           showSnackbar("Une erreur s'est produite", "error");
@@ -52,49 +53,54 @@ export default function Logincho() {
     }
   };
 
+  const handleOtpSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await axiosInstance.post(
+        `https://16.171.20.170:8085/User/verifyGardienCode?username=${encodeURIComponent(username)}&gardienCode=${encodeURIComponent(otp)}`
+      );
+      
+      if (response.data === true) {
+        setStep("newPassword");
+      } else {
+        showSnackbar("Code OTP invalide", "error");
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showSnackbar("Erreur lors de la vérification du code OTP", "error");
+    }
+  };
 
   const handlePasswordSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch("https://16.171.20.170:8085/User/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
+      const response = await axiosInstance.post("https://16.171.20.170:8085/User/login", {
+        username,
+        password
       });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Échec de la connexion");
-      }
-  
-      const data = await response.json();
+
+      const data = response.data;
       
       if (!data.accessToken) {
         throw new Error("Connexion réussie mais le jeton d'accès est manquant");
       }
-  
+
       const tokenParts = data.accessToken.split('.');
       if (tokenParts.length !== 3) {
         throw new Error("Format de jeton invalide");
       }
       const payload = JSON.parse(atob(tokenParts[1]));
       const userId = payload.sub;
-  
+
       localStorage.setItem("token", data.accessToken);
       localStorage.setItem("id", userId);
-  
-      const userResponse = await fetch(`https://16.171.20.170:8085/User/getUserRole/${userId}`, {
+
+      const userResponse = await axiosInstance.get(`https://16.171.20.170:8085/User/getUserRole/${userId}`, {
         headers: { "Authorization": `Bearer ${data.accessToken}` }
       });
-  
-      if (!userResponse.ok) {
-        throw new Error(`Échec de la récupération du rôle de l'utilisateur: ${userResponse.status} ${userResponse.statusText}`);
-      }
-  
-      const role = await userResponse.text().then(text => text.trim());
-  
+
+      const role = userResponse.data.trim();
+
       switch (role) {
         case 'AGENT':
           navigate("/Gardien");
@@ -115,31 +121,6 @@ export default function Logincho() {
     }
   };
 
-  const handleOtpSubmit = async (event) => {
-    event.preventDefault();
-    try {
-      const response = await fetch(`https://16.171.20.170:8085/User/verifyGardienCode?username=${username}&gardienCode=${otp}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      
-      const isOtpValid = await response.json();
-      
-      if (isOtpValid) {
-        setStep("newPassword");
-      } else {
-        showSnackbar("Code OTP invalide", "error");
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      showSnackbar("Erreur lors de la vérification du code OTP", "error");
-    }
-  };
-
   const handleNewPasswordSubmit = async (event) => {
     event.preventDefault();
     if (password !== confirmPassword) {
@@ -147,18 +128,24 @@ export default function Logincho() {
       return;
     }
     try {
-      const response = await fetch(`https://16.171.20.170:8085/User/createPassword?username=${username}&password=${password}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (response.ok) {
+      const response = await axiosInstance.post(
+        `https://16.171.20.170:8085/User/createPassword?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+      );
+      if (response.status === 200) {
         showSnackbar("Mot de passe défini avec succès", "success");
         setTimeout(() => setStep("password"), 2000);
       } else {
         showSnackbar("Erreur lors de la définition du mot de passe", "error");
       }
     } catch (error) {
-      showSnackbar("Erreur lors de la définition du mot de passe", "error");
+      console.error('Erreur lors de la définition du mot de passe:', error);
+      if (error.response) {
+        showSnackbar(`Erreur ${error.response.status}: ${error.response.data}`, "error");
+      } else if (error.request) {
+        showSnackbar("Pas de réponse du serveur", "error");
+      } else {
+        showSnackbar("Erreur lors de la configuration de la requête", "error");
+      }
     }
   };
   
@@ -227,6 +214,7 @@ export default function Logincho() {
                 noValidate
                 onSubmit={
                   step === "username" ? handleUsernameSubmit :
+                  step === "otp" ? handleOtpSubmit :
                   step === "password" ? handlePasswordSubmit :
                   handleNewPasswordSubmit
                 }
@@ -244,6 +232,19 @@ export default function Logincho() {
                     autoFocus
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
+                  />
+                )}
+                {step === "otp" && (
+                  <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="otp"
+                    label="Entrez le code OTP"
+                    name="otp"
+                    autoFocus
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
                   />
                 )}
                 {step === "password" && (
@@ -293,12 +294,13 @@ export default function Logincho() {
                   sx={{
                     mt: 3,
                     mb: 2,
-                    backgroundColor: '#C2002F',
-                    '&:hover': { backgroundColor: '#A5002A' },
-                    '&:disabled': { backgroundColor: '#FFB3B3' }
+                    backgroundColor: '#374869',
+                    '&:hover': { backgroundColor: '#374869' },
+                    '&:disabled': { backgroundColor: '#374869' }
                   }}
                 >
                   {step === "username" ? "Suivant" :
+                   step === "otp" ? "Vérifier OTP" :
                    step === "password" ? "Se Connecter" :
                    "Définir le mot de passe"}
                 </Button>
@@ -307,7 +309,7 @@ export default function Logincho() {
           </Grid>
         </Grid>
       </Box>
-    <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
         <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{width:'100%'}}>
           <Typography>{snackbarMessage}</Typography>
         </Alert>
