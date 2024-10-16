@@ -1,37 +1,41 @@
 import { useState, useEffect } from 'react';
 import useCurrentUserId from './useCurrentUserId';
+import axios from 'axios';
+
+const axiosInstance = axios.create();
+
+// Disable SSL certificate verification (only for development!)
+axiosInstance.defaults.httpsAgent = {
+  rejectUnauthorized: false
+};
 
 const useUserDetails = () => {
     const [userDetails, setUserDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const userId = useCurrentUserId();
-
+    
     useEffect(() => {
         const fetchUserDetails = async () => {
             if (userId) {
                 try {
                     setLoading(true);
                     console.log('Fetching user details for ID:', userId);
-                    const response = await fetch(`http://localhost:8085/User/getUserRole/${userId}`, {
+                    const roleResponse = await axiosInstance.get(`https://16.171.20.170:8085/User/getUserRole/${userId}`, {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            "Authorization": `Bearer ${localStorage.getItem('token')}`
                         }
                     });
-                    if (response.ok) {
-                        const text = await response.text();
-                        console.log('Raw response:', text);
-                        try {
-                            const userData = JSON.parse(text);
-                            console.log('Parsed user data:', userData);
-                            setUserDetails(userData);
-                        } catch (parseError) {
-                            console.log('Response is not JSON, treating as plain text');
-                            setUserDetails({ role: text.trim() });
-                        }
-                    } else {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
+                    
+                    const fullNameResponse = await axiosInstance.get(`https://er8wa98ace.execute-api.us-east-1.amazonaws.com/dev/getfulnameAgent/${userId}`);
+                    
+                    console.log('Raw role response:', roleResponse.data);
+                    console.log('Raw full name response:', fullNameResponse.data);
+                    
+                    const role = typeof roleResponse.data === 'object' ? roleResponse.data.role : roleResponse.data.trim();
+                    const { nom, prenom } = fullNameResponse.data;
+                    
+                    setUserDetails({ role, nom, prenom });
                 } catch (error) {
                     console.error('Error fetching user details:', error);
                     setError(error.message);
