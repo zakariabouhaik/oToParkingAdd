@@ -8,17 +8,12 @@ import axios from 'axios';
 
 const defaultTheme = createTheme();
 
-const axiosInstance = axios.create({
-  baseURL: isDevelopment ? 'http://localhost:8085' : 'https://16.171.20.170:8085',
-});
+const axiosInstance = axios.create();
 
-
-
-if (isDevelopment) {
-  axiosInstance.defaults.httpsAgent = {
-    rejectUnauthorized: false
-  };
-}
+// Disable SSL certificate verification (only for development!)
+axiosInstance.defaults.httpsAgent = {
+  rejectUnauthorized: false
+};
 
 
 
