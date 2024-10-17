@@ -10,12 +10,9 @@ const defaultTheme = createTheme();
 
 const axiosInstance = axios.create();
 
-// Disable SSL certificate verification (only for development!)
-axiosInstance.defaults.httpsAgent = {
+ axiosInstance.defaults.httpAgent = {
   rejectUnauthorized: false
 };
-
-
 
 export default function Logincho() {
   const navigate = useNavigate();
@@ -31,7 +28,7 @@ export default function Logincho() {
   const handleUsernameSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axiosInstance.post(`https://16.171.20.170:8085/User/hasPassword?username=${username}`);
+      const response = await axiosInstance.post(`http://16.171.20.170:8085/User/hasPassword?username=${username}`);
       
       const result = response.data;
       console.log('Response:', result);
@@ -59,7 +56,7 @@ export default function Logincho() {
     event.preventDefault();
     try {
       const response = await axiosInstance.post(
-        `https://16.171.20.170:8085/User/verifyGardienCode?username=${encodeURIComponent(username)}&gardienCode=${encodeURIComponent(otp)}`
+        `http://16.171.20.170:8085/User/verifyGardienCode?username=${encodeURIComponent(username)}&gardienCode=${encodeURIComponent(otp)}`
       );
       
       if (response.data === true) {
@@ -76,7 +73,7 @@ export default function Logincho() {
   const handlePasswordSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axiosInstance.post("https://16.171.20.170:8085/User/login", {
+      const response = await axiosInstance.post("http://16.171.20.170:8085/User/login", {
         username,
         password
       });
@@ -97,7 +94,7 @@ export default function Logincho() {
       localStorage.setItem("token", data.accessToken);
       localStorage.setItem("id", userId);
 
-      const userResponse = await axiosInstance.get(`https://16.171.20.170:8085/User/getUserRole/${userId}`, {
+      const userResponse = await axiosInstance.get(`http://16.171.20.170:8085/User/getUserRole/${userId}`, {
         headers: { "Authorization": `Bearer ${data.accessToken}` }
       });
 
@@ -131,7 +128,7 @@ export default function Logincho() {
     }
     try {
       const response = await axiosInstance.post(
-        `https://16.171.20.170:8085/User/createPassword?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+        `http://16.171.20.170:8085/User/createPassword?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
       );
       if (response.status === 200) {
         showSnackbar("Mot de passe défini avec succès", "success");
