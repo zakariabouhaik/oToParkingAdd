@@ -10,7 +10,7 @@ const defaultTheme = createTheme();
 
 const axiosInstance = axios.create();
 
- axiosInstance.defaults.httpAgent = {
+ axiosInstance.defaults.httpsAgent = {
   rejectUnauthorized: false
 };
 
