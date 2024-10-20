@@ -56,7 +56,7 @@ export default function Logincho() {
     event.preventDefault();
     try {
       const response = await axiosInstance.post(
-        `http://fgefweff.online:8085/User/verifyGardienCode?username=${encodeURIComponent(username)}&gardienCode=${encodeURIComponent(otp)}`
+        `https://fgefweff.online:8085/User/verifyGardienCode?username=${encodeURIComponent(username)}&gardienCode=${encodeURIComponent(otp)}`
       );
       
       if (response.data === true) {
