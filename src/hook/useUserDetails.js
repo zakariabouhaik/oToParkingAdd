@@ -21,7 +21,7 @@ const useUserDetails = () => {
                 try {
                     setLoading(true);
                     console.log('Fetching user details for ID:', userId);
-                    const roleResponse = await axiosInstance.get(`https://16.171.20.170:8085/User/getUserRole/${userId}`, {
+                    const roleResponse = await axiosInstance.get(`https://fgefweff.online:8085/User/getUserRole/${userId}`, {
                         headers: {
                             "Authorization": `Bearer ${localStorage.getItem('token')}`
                         }
