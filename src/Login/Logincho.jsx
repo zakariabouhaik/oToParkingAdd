@@ -94,7 +94,7 @@ export default function Logincho() {
       localStorage.setItem("token", data.accessToken);
       localStorage.setItem("id", userId);
 
-      const userResponse = await axiosInstance.get(`https://16.171.20.170:8085/User/getUserRole/${userId}`, {
+      const userResponse = await axiosInstance.get(`https://fgefweff.online:8085/User/getUserRole/${userId}`, {
         headers: { "Authorization": `Bearer ${data.accessToken}` }
       });
 
@@ -128,7 +128,7 @@ export default function Logincho() {
     }
     try {
       const response = await axiosInstance.post(
-        `https://16.171.20.170:8085/User/createPassword?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+        `https://fgefweff.online:8085/User/createPassword?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
       );
       if (response.status === 200) {
         showSnackbar("Mot de passe défini avec succès", "success");
