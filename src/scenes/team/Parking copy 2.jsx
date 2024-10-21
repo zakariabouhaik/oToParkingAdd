@@ -61,9 +61,9 @@ const Parkings = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <ThreeDot />
-      </Box>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <ThreeDot variant="bounce" color="#317bcc" size="large" text="" textColor="" />
+      </div>
     );
   }
 
