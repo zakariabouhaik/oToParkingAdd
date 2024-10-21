@@ -11,21 +11,41 @@ import {
   Grid,
   Typography,
   Button,
-  Stack,
-  Alert,
-  AlertTitle
+  Container,
+  CircularProgress,
+  Snackbar,
 } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
 import {
   AccountCircle,
   AlternateEmail,
   ConfirmationNumber,
   Apartment,
+  LocalPhone,
+  Public,
 } from '@mui/icons-material';
-import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
-import SouthAmericaIcon from '@mui/icons-material/SouthAmerica';
-import { ThreeDot } from 'react-loading-indicators';
+import { styled } from '@mui/material/styles';
 
- 
+
+const StyledBox = styled(Box)(({ theme }) => ({
+  '& .MuiTextField-root': {
+    marginBottom: theme.spacing(2),
+  },
+  '& .MuiFormControl-root': {
+    marginBottom: theme.spacing(2),
+  },
+}));
+
+const StyledTypography = styled(Typography)(({ theme }) => ({
+  marginBottom: theme.spacing(4),
+  fontWeight: 'bold',
+  color: theme.palette.primary.main,
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  marginTop: theme.spacing(3),
+  padding: theme.spacing(1, 4),
+}));
 
 
 const InputField = ({ icon, label, error, onInputChange, ...props }) => (
@@ -52,6 +72,8 @@ const InputField = ({ icon, label, error, onInputChange, ...props }) => (
   />
 );
 
+
+
 const SelectField = ({ label, options, startAdornment, error, onSelectChange, ...props }) => (
   <FormControl fullWidth error={!!error}>
     <InputLabel>{label}</InputLabel>
@@ -66,7 +88,7 @@ const SelectField = ({ label, options, startAdornment, error, onSelectChange, ..
         }
       }}
     >
-      <MenuItem value=""><em>None</em></MenuItem>
+      <MenuItem value=""><em>Aucun</em></MenuItem>
       {options.map((option) => (
         <MenuItem key={option.value} value={option.value}>
           {option.label}
@@ -77,28 +99,25 @@ const SelectField = ({ label, options, startAdornment, error, onSelectChange, ..
   </FormControl>
 );
 
-
-const axiosInstance = axios.create();
-
-// Disable SSL certificate verification (only for development!)
-axiosInstance.defaults.httpsAgent = {
-  rejectUnauthorized: false
-};
-
-
+const axiosInstance = axios.create({
+  httpsAgent: { rejectUnauthorized: false } // À utiliser uniquement en développement !
+});
 
 const Agent = () => {
+ 
+  const [formData, setFormData] = useState({
+    nom: '',
+    prenom: '',
+    email: '',
+    telephone: '',
+    cin: '',
+    region: '',
+    province: '',
+    pachalik: '',
+  });
   const [regions, setRegions] = useState([]);
-  const [selectedRegion, setSelectedRegion] = useState('');
   const [provinces, setProvinces] = useState([]);
-  const [nom, setNom] = useState('');
-  const [prenom, setPrenom] = useState('');
-  const [email, setEmail] = useState('');
-  const [telephone, setTelephone] = useState('');
-  const [cin, setCin] = useState('');
-  const [selectedProvince, setSelectedProvince] = useState('');
   const [pachaliks, setPachaliks] = useState([]);
-  const [selectedPachalik, setSelectedPachalik] = useState('');
   const [loading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState({});
@@ -109,60 +128,35 @@ const Agent = () => {
 
   const handleInputChange = (e, clearError = false) => {
     const { name, value } = e.target;
-    switch (name) {
-      case 'nom':
-        setNom(value);
-        break;
-      case 'prenom':
-        setPrenom(value);
-        break;
-      case 'email':
-        setEmail(value);
-        break;
-      case 'telephone':
-        setTelephone(value);
-        break;
-      case 'cin':
-        setCin(value);
-        break;
-      case 'region':
-        setSelectedRegion(value);
-        fetchProvinces(value);
-        break;
-      case 'province':
-        setSelectedProvince(value);
-        fetchPachaliks(value);
-        break;
-      case 'pachalik':
-        setSelectedPachalik(value);
-        break;
-      default:
-        break;
-    }
-
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (clearError) {
       setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+    if (name === 'region') {
+      fetchProvinces(value);
+    } else if (name === 'province') {
+      fetchPachaliks(value);
     }
   };
 
   const resetForm = () => {
-    setNom('');
-    setPrenom('');
-    setEmail('');
-    setTelephone('');
-    setCin('');
-    setSelectedRegion('');
-    setSelectedProvince('');
-    setSelectedPachalik('');
+    setFormData({
+      nom: '',
+      prenom: '',
+      email: '',
+      telephone: '',
+      cin: '',
+      region: '',
+      province: '',
+      pachalik: '',
+    });
     setErrors({});
   };
-
- 
 
   const fetchRegions = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get('https://er8wa98ace.execute-api.us-east-1.amazonaws.com/dev/getallregion');
+      const response = await axiosInstance.get('https://er8wa98ace.execute-api.us-east-1.amazonaws.com/dev/getallregion');
       if (response.data && response.data.allregion) {
         setRegions(response.data.allregion);
       } else {
@@ -179,7 +173,7 @@ const Agent = () => {
     if (!regionId) return;
     setIsLoading(true);
     try {
-      const response = await axios.get(`https://er8wa98ace.execute-api.us-east-1.amazonaws.com/dev/getprovinceofregion/${regionId}`);
+      const response = await axiosInstance.get(`https://er8wa98ace.execute-api.us-east-1.amazonaws.com/dev/getprovinceofregion/${regionId}`);
       if (response.data && response.data.ourprovinces) {
         setProvinces(response.data.ourprovinces);
       } else {
@@ -198,7 +192,7 @@ const Agent = () => {
     if (!provinceId) return;
     setIsLoading(true);
     try {
-      const response = await axios.get(`https://er8wa98ace.execute-api.us-east-1.amazonaws.com/dev/getPachalikOfProvince/${provinceId}`);
+      const response = await axiosInstance.get(`https://er8wa98ace.execute-api.us-east-1.amazonaws.com/dev/getPachalikOfProvince/${provinceId}`);
       setPachaliks(response.data.pachaliks);
     } catch (error) {
       console.error('Erreur lors de la récupération des pachaliks:', error);
@@ -208,32 +202,11 @@ const Agent = () => {
     }
   };
 
-  const handleRegionChange = (event) => {
-    const regionId = event.target.value;
-    setSelectedRegion(regionId);
-    setSelectedProvince('');
-    setSelectedPachalik('');
-    fetchProvinces(regionId);
-  };
-
-  const handleProvinceChange = (event) => {
-    const provinceId = event.target.value;
-    setSelectedProvince(provinceId);
-    setSelectedPachalik('');
-    fetchPachaliks(provinceId);
-  };
-
   const validateForm = () => {
     const newErrors = {};
-    if (!nom) newErrors.nom = "Le nom est requis";
-    if (!prenom) newErrors.prenom = "Le prénom est requis";
-    if (!email) newErrors.email = "L'email est requis";
-    if (!telephone) newErrors.telephone = "Le numéro de téléphone est requis";
-    if (!cin) newErrors.cin = "Le CIN est requis";
-    if (!selectedRegion) newErrors.region = "La région est requise";
-    if (!selectedProvince) newErrors.province = "La province est requise";
-    if (!selectedPachalik) newErrors.pachalik = "Le pachalik est requis";
-
+    Object.entries(formData).forEach(([key, value]) => {
+      if (!value) newErrors[key] = `Le champ ${key} est requis`;
+    });
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -243,7 +216,7 @@ const Agent = () => {
 
     setIsLoading(true);
     try {
-      const response1 = await axiosInstance.post(`https://fgefweff.online:8085/User/createAgent?username=${telephone}`);
+      const response1 = await axiosInstance.post(`https://fgefweff.online:8085/User/createAgent?username=${formData.telephone}`);
 
       if (!response1.data || !response1.data.id) {
         throw new Error('Invalid response from first API');
@@ -253,15 +226,8 @@ const Agent = () => {
 
       const response2 = await fetch(`https://er8wa98ace.execute-api.us-east-1.amazonaws.com/dev/createAgent`, {
         method: 'POST',
-       
         body: JSON.stringify({
-          nom,
-          prenom,
-          cin,
-          email,   
-          region: selectedRegion,
-          province: selectedProvince,
-          pachalik: selectedPachalik,
+          ...formData,
           keycloakId: keycloakId
         })
       });
@@ -272,11 +238,10 @@ const Agent = () => {
 
       setSuccess(true);
       
-      // Set a timer to reset the form and hide the success message after 2 seconds
       setTimeout(() => {
         setSuccess(false);
         resetForm();
-      }, 800);
+      }, 3000);
 
     } catch (error) {
       console.error('Error creating agent:', error);
@@ -288,167 +253,139 @@ const Agent = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <ThreeDot variant="bounce" color="#317bcc" size="large" text="" textColor="" />
-      </div>
-    );
-  }
-
-  if (success) {
-    return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100vh',
-          width: '100vw',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          backgroundColor: 'rgba(255, 255, 255, 0.8)' // semi-transparent white background
-        }}
-      >
-        <Alert 
-          severity="success"
-          sx={{
-            width: '50%', // You can adjust this value
-            padding: '2rem',
-            '& .MuiAlert-icon': {
-              fontSize: '2rem'
-            },
-            '& .MuiAlert-message': {
-              fontSize: '1.2rem'
-            }
-          }}
-        >
-          <AlertTitle sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Succès</AlertTitle>
-          L'ajout de l'Agent a bien été effectué.
-        </Alert>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ margin: 'auto', padding: 6 }}>
-      <Typography variant="h4" sx={{marginBottom:4}}>
+    <Container maxWidth="md">
+    <StyledBox sx={{ mt: 4, mb: 4 }}>
+      <StyledTypography variant="h4">
         Enregistrement d'agent
-      </Typography>
+      </StyledTypography>
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6}>
           <InputField
             icon={<AccountCircle />}
             label="Nom"
             name="nom"
-            value={nom}
+            value={formData.nom}
             onInputChange={handleInputChange}
             error={errors.nom}
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <InputField
-            icon={<AccountCircle />}
-            label="Prénom"
-            name="prenom"
-            value={prenom}
-            onInputChange={handleInputChange}
-            error={errors.prenom}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <InputField
-            icon={<AlternateEmail />}
-            label="Email"
-            type="email"
-            name="email"
-            value={email}
-            onInputChange={handleInputChange}
-            error={errors.email}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <InputField
-            icon={<LocalPhoneIcon />}
-            label="Numéro de téléphone"
-            name="telephone"
-            value={telephone}
-            onInputChange={handleInputChange}
-            error={errors.telephone}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <InputField
-            icon={<ConfirmationNumber />}
-            label="CIN"
-            name="cin"
-            value={cin}
-            onInputChange={handleInputChange}
-            error={errors.cin}
-          />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <SelectField
-            label="Région"
-            name="region"
-            value={selectedRegion}
-            onSelectChange={handleInputChange}
-            options={regions.map(region => ({
-              value: region.id,
-              label: region.nom
-            }))}
-            startAdornment={
-              <InputAdornment position="start">
-                <SouthAmericaIcon />
-              </InputAdornment>
-            }
-            error={errors.region}
-          />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <SelectField
-            label="Province"
-            name="province"
-            value={selectedProvince}
-            onSelectChange={handleInputChange}
-            options={provinces.map(province => ({
-              value: province.id,
-              label: province.nom
-            }))}
-            startAdornment={
-              <InputAdornment position="start">
-                <Apartment />
-              </InputAdornment>
-            }
-            error={errors.province}
-          />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <SelectField
-            label="Pachalik"
-            name="pachalik"
-            value={selectedPachalik}
-            onSelectChange={handleInputChange}
-            options={pachaliks.map(pachalik => ({
-              value: pachalik.id,
-              label: pachalik.nom
-            }))}
-            startAdornment={
-              <InputAdornment position="start">
-                <Apartment />
-              </InputAdornment>
-            }
-            error={errors.pachalik}
-          />
-        </Grid>
-      </Grid>
-      <Button 
-        variant="contained" 
-        sx={{marginTop:5, backgroundColor:'#374869'}}
-        onClick={handleSubmit}
-      >
-        Enregistrer
-      </Button>
-    </Box>
+          <Grid item xs={12} sm={6}>
+            <InputField
+              icon={<AccountCircle />}
+              label="Prénom"
+              name="prenom"
+              value={formData.prenom}
+              onInputChange={handleInputChange}
+              error={errors.prenom}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <InputField
+              icon={<AlternateEmail />}
+              label="Email"
+              type="email"
+              name="email"
+              value={formData.email}
+              onInputChange={handleInputChange}
+              error={errors.email}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <InputField
+              icon={<LocalPhone />}
+              label="Numéro de téléphone"
+              name="telephone"
+              value={formData.telephone}
+              onInputChange={handleInputChange}
+              error={errors.telephone}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <InputField
+              icon={<ConfirmationNumber />}
+              label="CIN"
+              name="cin"
+              value={formData.cin}
+              onInputChange={handleInputChange}
+              error={errors.cin}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <SelectField
+              label="Région"
+              name="region"
+              value={formData.region}
+              onSelectChange={handleInputChange}
+              options={regions.map(region => ({
+                value: region.id,
+                label: region.nom
+              }))}
+              startAdornment={
+                <InputAdornment position="start">
+                  <Public />
+                </InputAdornment>
+              }
+              error={errors.region}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <SelectField
+              label="Province"
+              name="province"
+              value={formData.province}
+              onSelectChange={handleInputChange}
+              options={provinces.map(province => ({
+                value: province.id,
+                label: province.nom
+              }))}
+              startAdornment={
+                <InputAdornment position="start">
+                  <Apartment />
+                </InputAdornment>
+              }
+              error={errors.province}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <SelectField
+              label="Pachalik"
+              name="pachalik"
+              value={formData.pachalik}
+              onSelectChange={handleInputChange}
+              options={pachaliks.map(pachalik => ({
+                value: pachalik.id,
+                label: pachalik.nom
+              }))}
+              startAdornment={
+                <InputAdornment position="start">
+                  <Apartment />
+                </InputAdornment>
+              }
+              error={errors.pachalik}
+            />
+          </Grid>
+          </Grid>
+        <StyledButton 
+          variant="contained" 
+          onClick={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? <CircularProgress size={24} /> : 'Enregistrer'}
+        </StyledButton>
+      </StyledBox>
+      <Snackbar open={success} autoHideDuration={3000} onClose={() => setSuccess(false)}>
+        <MuiAlert elevation={6} variant="filled" severity="success">
+          L'ajout de l'Agent a bien été effectué.
+        </MuiAlert>
+      </Snackbar>
+    </Container>
   );
 };
 

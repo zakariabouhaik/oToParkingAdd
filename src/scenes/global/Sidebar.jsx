@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Box, IconButton, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
@@ -15,7 +15,7 @@ import PieChartOutlineOutlinedIcon from "@mui/icons-material/PieChartOutlineOutl
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
-import useUserDetails from '../../hook/useUserDetails'; // Adjust the path as needed
+import useUserDetails from '../../hook/useUserDetails';
 
 import { tokens } from "../../theme";
 
@@ -37,10 +37,15 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
   );
 };
 
-const Sidebar = () => {
+const Sidebar = ({ setSidebarWidth }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState("Dashboard");
   const { userDetails, loading, error } = useUserDetails();
+
+  useEffect(() => {
+    // Communiquer la largeur au composant parent
+    setSidebarWidth(isCollapsed ? 80 : 250);
+  }, [isCollapsed, setSidebarWidth]);
 
   if (loading) {
     return <div>Chargement...</div>;
@@ -70,6 +75,13 @@ const Sidebar = () => {
         },
         "& .pro-menu-item.active": {
           color: "#6870fa !important",
+        },
+        "& .pro-sidebar": {
+          width: isCollapsed ? '80px !important' : '250px !important',
+          minWidth: isCollapsed ? '80px !important' : '250px !important',
+        },
+        "& .pro-sidebar-content": {
+          transition: 'width 0.3s ease-in-out',
         },
       }}
     >
@@ -122,7 +134,6 @@ const Sidebar = () => {
             </Box>
           )}
 
-
           {!isCollapsed && (
             <Box mb="25px">
               <Box textAlign="center">
@@ -156,32 +167,32 @@ const Sidebar = () => {
               />
             )}
             {isAGENT && (
-            <Item
-              title="Ajouter Gardien"
-              to="/Gardien"
-              icon={<ContactsOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-              )}
-             {isSupervisor && (
-            <Item
-              title="Ajouter Parking"
-              to="/Parking"
-              icon={<ReceiptOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-             )}
-             {isAGENT && (
-            <Item
-              title="Parking List"
-              to="/Parkings"
-              icon={<ReceiptOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-             )}
+              <Item
+                title="Ajouter Gardien"
+                to="/Gardien"
+                icon={<ContactsOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+            )}
+            {isSupervisor && (
+              <Item
+                title="Ajouter Parking"
+                to="/Parking"
+                icon={<ReceiptOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+            )}
+            {isAGENT && (
+              <Item
+                title="Parking List"
+                to="/Parkings"
+                icon={<ReceiptOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+            )}
           </Box>
         </Menu>
       </ProSidebar>

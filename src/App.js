@@ -1,106 +1,105 @@
 import { useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Topbar from "./scenes/global/Topbar";
 import Sidebar from "./scenes/global/Sidebar";
+import Dashboard from "./scenes/dashboard";
+import Team from "./scenes/team";
+import Invoices from "./scenes/invoices";
+import Contacts from "./scenes/contacts";
+import Bar from "./scenes/bar";
+import Form from "./scenes/form";
+import Line from "./scenes/line";
+import Pie from "./scenes/pie";
 import Agent from "./scenes/team/Agent";
 import Gardien from "./scenes/team/Gardien";
+import FAQ from "./scenes/faq";
 import Parking from "./scenes/team/Parking";
 import Logincho from "./Login/Logincho";
-import ProtectedRoute from "./ProtectedRoute";
+import Login from "./Login/Login";
 import Parkingo from "./scenes/team/Parking copy";
+import Geography from "./scenes/geography";
 import Parkings from "./scenes/team/Parking copy 2";
+import ProtectedRoute from "./ProtectedRoute";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
+import Calendar from "./scenes/calendar/calendar";
 
 function App() {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
+  const [sidebarWidth, setSidebarWidth] = useState(250); // Nouvelle état pour la largeur du sidebar
+  const location = useLocation();
 
-  const AuthenticatedLayout = ({ children }) => (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      <div style={{
-        position: 'fixed',
-        height: '100vh',
-        overflowY: 'auto',
-        zIndex: 1000,
-        top: 0,
-        left: 0,
-        bottom: 0,
-        backgroundColor: '#1F2A40',
-      }}>
-        <Sidebar isSidebar={isSidebar} />
-      </div>
-      <main style={{
-        flexGrow: 1,
-        marginLeft: '250px',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        overflow: 'hidden',
-      }}>
-        <div style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 1000,
-        }}>
-          <Topbar setIsSidebar={setIsSidebar} />
-        </div>
-        <div style={{
-          flexGrow: 1,
-          padding: '20px',
-          overflowY: 'auto',
-        }}>
-          {children}
-        </div>
-      </main>
-    </div>
-  );
+  const isLoginPage = location.pathname === "/" || location.pathname === "/login";
 
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Routes>
-          <Route path="/" element={<Logincho />} />
-          <Route path="/login" element={<Logincho />} />
-          <Route path="/Gardien" element={
-            <ProtectedRoute requiredRoles={['AGENT']}>
-              <AuthenticatedLayout>
-                <Gardien />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/agent" element={
-            <ProtectedRoute requiredRoles={['SUPERVISEUR']}>
-              <AuthenticatedLayout>
-                <Agent />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/parkings" element={
-            <ProtectedRoute requiredRoles={['AGENT']}>
-              <AuthenticatedLayout>
-                <Parkings />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/Parkingo" element={
-            <ProtectedRoute requiredRoles={['AGENT']}>
-              <AuthenticatedLayout>
-                <Parkingo />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/Parking" element={
-            <ProtectedRoute requiredRoles={['SUPERVISEUR']}>
-              <AuthenticatedLayout>
-                <Parking />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          } />
-         
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        {isLoginPage ? (
+          <Logincho />
+        ) : (
+          <div style={{
+            display: 'flex',
+            height: '100vh',
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              position: 'fixed',
+              height: '100vh',
+              overflowY: 'auto',
+              zIndex: 1000,
+              top: 0,
+              left: 0,
+              bottom: 0,
+              backgroundColor: '#1F2A40',
+              width: `${sidebarWidth}px`, // Utiliser la largeur dynamique
+              transition: 'width 0.3s ease', // Ajouter une transition douce
+            }}>
+              <Sidebar isSidebar={isSidebar} setSidebarWidth={setSidebarWidth} />
+            </div>
+            <main style={{
+              flexGrow: 1,
+              marginLeft: `${sidebarWidth}px`, // Utiliser la largeur dynamique
+              transition: 'margin-left 0.3s ease', // Ajouter une transition douce
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100vh',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 1000,
+              }}>
+                <Topbar setIsSidebar={setIsSidebar} />
+              </div>
+              <div style={{
+                flexGrow: 1,
+                padding: '20px',
+                overflowY: 'auto',
+              }}>
+                <Routes>
+                  <Route path="/team" element={<Team />} />
+                  <Route path="/contacts" element={<Contacts />} />
+                  <Route path="/invoices" element={<Invoices />} />
+                  <Route path="/form" element={<Form />} />
+                  <Route path="/parkings" element={<Parkings />} />
+                  <Route path="/Parkingo" element={<Parkingo />} />
+                  <Route path="/bar" element={<Bar />} />
+                  <Route path="/pie" element={<Pie />} />
+                  <Route path="/line" element={<Line />} />
+                  <Route path="/Agent" element={<Agent />} />
+                  <Route path="/Gardien" element={<Gardien />} />
+                  <Route path="/Parking" element={<Parking />} />              
+                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/calendar" element={<Calendar />} />
+                  <Route path="/geography" element={<Geography />} />
+                </Routes>
+              </div>
+            </main>
+          </div>
+        )}
       </ThemeProvider>
     </ColorModeContext.Provider>
   );
