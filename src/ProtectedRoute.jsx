@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import useUserDetails from "../src/hook/useUserDetails";
+import { ThreeDot } from 'react-loading-indicators';
 
 const ProtectedRoute = ({ children, requiredRoles }) => {
     const { userDetails, loading } = useUserDetails();
@@ -15,7 +16,11 @@ const ProtectedRoute = ({ children, requiredRoles }) => {
     }
 
   if (loading) {
-  return <div>Chargement...</div>;
+ return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <ThreeDot variant="bounce" color="#317bcc" size="large" text="" textColor="" />
+      </div>
+    );
 }
   
     if (!userDetails) {
