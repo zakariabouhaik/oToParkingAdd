@@ -1,34 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
-import { Box, IconButton, Typography } from "@mui/material";
+import { Box, IconButton, Typography, useTheme, useMediaQuery } from "@mui/material";
 import { Link } from "react-router-dom";
 import "react-pro-sidebar/dist/css/styles.css";
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
 import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
-import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
-import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
-import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
-import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
-import PieChartOutlineOutlinedIcon from "@mui/icons-material/PieChartOutlineOutlined";
-import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
-import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import useUserDetails from '../../hook/useUserDetails';
 
 import { tokens } from "../../theme";
 
 const darkColors = tokens("dark");
 
-const Item = ({ title, to, icon, selected, setSelected }) => {
+const Item = ({ title, to, icon, selected, setSelected, setIsCollapsed, isMobile }) => {
   return (
     <MenuItem
       active={selected === title}
       style={{
         color: darkColors.grey[100],
       }}
-      onClick={() => setSelected(title)}
+      onClick={() => {
+        setSelected(title);
+        if (isMobile) setIsCollapsed(true); // Ferme le sidebar après un clic seulement sur mobile
+      }}
       icon={icon}
     >
       <Typography>{title}</Typography>
@@ -38,14 +33,19 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
 };
 
 const Sidebar = ({ setSidebarWidth }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [isCollapsed, setIsCollapsed] = useState(isMobile);
   const [selected, setSelected] = useState("Dashboard");
   const { userDetails, loading, error } = useUserDetails();
 
   useEffect(() => {
-    // Communiquer la largeur au composant parent
     setSidebarWidth(isCollapsed ? 80 : 250);
   }, [isCollapsed, setSidebarWidth]);
+
+  useEffect(() => {
+    setIsCollapsed(isMobile);
+  }, [isMobile]);
 
   if (loading) {
     return <div>Chargement...</div>;
@@ -164,6 +164,8 @@ const Sidebar = ({ setSidebarWidth }) => {
                 icon={<PeopleOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
+                setIsCollapsed={setIsCollapsed}
+                isMobile={isMobile}
               />
             )}
             {isAGENT && (
@@ -173,6 +175,8 @@ const Sidebar = ({ setSidebarWidth }) => {
                 icon={<ContactsOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
+                setIsCollapsed={setIsCollapsed}
+                isMobile={isMobile}
               />
             )}
             {isSupervisor && (
@@ -182,6 +186,8 @@ const Sidebar = ({ setSidebarWidth }) => {
                 icon={<ReceiptOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
+                setIsCollapsed={setIsCollapsed}
+                isMobile={isMobile}
               />
             )}
             {isAGENT && (
@@ -191,6 +197,8 @@ const Sidebar = ({ setSidebarWidth }) => {
                 icon={<ReceiptOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
+                setIsCollapsed={setIsCollapsed}
+                isMobile={isMobile}
               />
             )}
           </Box>
