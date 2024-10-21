@@ -14,6 +14,9 @@ const ProtectedRoute = ({ children, requiredRoles }) => {
         return <Navigate to="/" state={{ from: location }} replace />;
     }
 
+  if (loading) {
+  return <div>Chargement...</div>;
+}
   
     if (!userDetails) {
         // User details couldn't be fetched, redirect to login
