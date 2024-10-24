@@ -6,7 +6,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 
-const defaultTheme = createTheme();
+ 
 
 const axiosInstance = axios.create();
 
