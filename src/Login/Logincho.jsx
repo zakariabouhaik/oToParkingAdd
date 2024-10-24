@@ -8,11 +8,6 @@ import axios from 'axios';
 
  
 
- 
- axiosInstance.defaults.httpsAgent = {
-  rejectUnauthorized: false
-};
-
 export default function Logincho() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
